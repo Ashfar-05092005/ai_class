@@ -1,19 +1,17 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors()); // Allow all origins (you can restrict later)
 app.use(express.json());
+app.use(express.static("public"));
 
-// Serve React frontend (after build)
-app.use(express.static(path.join(__dirname, "build")));
-
+// Root route (just to test backend)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
+  res.send("Backend successful ✅");
 });
 
 // API: Summarization
@@ -22,7 +20,7 @@ app.post("/api/summarize", async (req, res) => {
 
   if (!geminiApiKey) {
     return res.status(500).json({
-      error: "API key not configured. Please add GEMINI_API_KEY to .env",
+      error: "API key not configured. Please add it to your .env file.",
     });
   }
 
@@ -32,7 +30,7 @@ app.post("/api/summarize", async (req, res) => {
   }
 
   const safeTone = tone.toLowerCase();
-  const prompt = `Summarize the following message in exactly 10git bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
+  const prompt = `Summarize the following message in exactly 12 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
 
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
@@ -58,15 +56,16 @@ app.post("/api/summarize", async (req, res) => {
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "No summary generated.";
 
-    return res.json({ summary: summary.trim() });
+    res.json({ summary: summary.trim() });
   } catch (e) {
     console.error("Server error:", e);
-    return res.status(500).json({ error: e.message });
+    res.status(500).json({ error: e.message });
   }
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.port || 4000;
 app.listen(PORT, () => {
+  console.log("Backend successful ✅");
   console.log(`Server running at http://localhost:${PORT}`);
 });

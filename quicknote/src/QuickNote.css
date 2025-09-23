@@ -1,0 +1,20 @@
+/* Container background (optional overlay or image) */
+
+
+/* Textarea placeholder styling */
+.custom-textarea::placeholder {
+  color: #fffdfd;
+  opacity: 1; /* Ensures full visibility on Firefox */
+}
+
+.custom-textarea::-webkit-input-placeholder {
+  color: #000000;
+}
+
+.custom-textarea::-moz-placeholder {
+  color: #f9f9f9;
+}
+
+.custom-textarea:-ms-input-placeholder {
+  color: #f9f9f9;
+}

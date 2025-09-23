@@ -5,11 +5,11 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-app.use(cors()); // Allow all origins (you can restrict later)
+app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// Root route (just to test backend)
+// Root route
 app.get("/", (req, res) => {
   res.send("Backend successful ✅");
 });
@@ -43,15 +43,27 @@ app.post("/api/summarize", async (req, res) => {
       }),
     });
 
-    if (!geminiResponse.ok) {
-      const errorData = await geminiResponse.json().catch(() => ({}));
-      console.error("API Error:", geminiResponse.status, errorData);
-      return res
-        .status(500)
-        .json({ error: errorData.error?.message || "Gemini API failed" });
+    // Get raw response text first
+    const rawText = await geminiResponse.text();
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (err) {
+      console.error("❌ Failed to parse JSON:", rawText);
+      return res.status(500).json({
+        error: "Invalid response from Gemini API",
+        details: rawText,
+      });
     }
 
-    const data = await geminiResponse.json();
+    if (!geminiResponse.ok) {
+      console.error("API Error:", geminiResponse.status, data);
+      return res
+        .status(500)
+        .json({ error: data.error?.message || "Gemini API failed" });
+    }
+
     const summary =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
       "No summary generated.";

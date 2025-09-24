@@ -1,18 +1,18 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); 
+const fetch = require("node-fetch"); // for Node <18
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors()); // allow all origins; for production, set your frontend URL
 app.use(express.json());
 app.use(express.static("public"));
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Backend successful ✅");
+  res.send("Backend is running ✅");
 });
 
 // API: Summarization
@@ -30,8 +30,7 @@ app.post("/api/summarize", async (req, res) => {
     return res.status(400).json({ error: "Both text and tone are required." });
   }
 
-  const safeTone = tone.toLowerCase();
-  const prompt = `Summarize the following message in exactly 12 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
+  const prompt = `Summarize the following message in exactly 12 bullet points using a ${tone.toLowerCase()} tone:\n\n"""${text}"""`;
 
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
@@ -45,32 +44,25 @@ app.post("/api/summarize", async (req, res) => {
     const rawText = await geminiResponse.text();
 
     if (!geminiResponse.ok) {
-      console.error("Gemini API error:", geminiResponse.status, rawText);
       return res.status(500).json({ error: "Gemini API request failed", details: rawText });
     }
 
     let data;
     try {
       data = JSON.parse(rawText);
-    } catch (err) {
-      console.error("❌ Failed to parse JSON:", rawText);
+    } catch {
       return res.status(500).json({ error: "Invalid JSON from Gemini API", details: rawText });
     }
 
     const summary =
-      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join(" ").trim() ||
-      "No summary generated.";
+      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join(" ").trim() || "No summary generated.";
 
     res.json({ summary });
   } catch (err) {
-    console.error("Server error:", err);
     res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
 // Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log("Backend server running ✅");
-  console.log(`Server at http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));

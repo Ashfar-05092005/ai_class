@@ -4,7 +4,7 @@ const cors = require("cors");
 const fetch = require("node-fetch"); // Node <18
 const path = require("path");
 
-const app = express();
+
 
 // Middleware
 app.use(cors()); // allow requests from frontend

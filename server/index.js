@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // if using Node <18
+const fetch = require("node-fetch"); 
 
 const app = express();
 
@@ -12,7 +12,7 @@ app.use(express.static("public"));
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Backend successful vazthukal vazthukal");
+  res.send("Backend successful ✅");
 });
 
 // API: Summarization
@@ -31,7 +31,7 @@ app.post("/api/summarize", async (req, res) => {
   }
 
   const safeTone = tone.toLowerCase();
-  const prompt = `Summarize the following message in exactly 10 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
+  const prompt = `Summarize the following message in exactly 12 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
 
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
@@ -39,21 +39,14 @@ app.post("/api/summarize", async (req, res) => {
     const geminiResponse = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
     });
 
-    // Get raw text
     const rawText = await geminiResponse.text();
 
-    // Check if response is OK before parsing JSON
     if (!geminiResponse.ok) {
       console.error("Gemini API error:", geminiResponse.status, rawText);
-      return res.status(500).json({
-        error: "Gemini API request failed",
-        details: rawText,
-      });
+      return res.status(500).json({ error: "Gemini API request failed", details: rawText });
     }
 
     let data;
@@ -61,16 +54,14 @@ app.post("/api/summarize", async (req, res) => {
       data = JSON.parse(rawText);
     } catch (err) {
       console.error("❌ Failed to parse JSON:", rawText);
-      return res.status(500).json({
-        error: "Invalid JSON from Gemini API",
-        details: rawText,
-      });
+      return res.status(500).json({ error: "Invalid JSON from Gemini API", details: rawText });
     }
 
     const summary =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No summary generated.";
+      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join(" ").trim() ||
+      "No summary generated.";
 
-    res.json({ summary: summary.trim() });
+    res.json({ summary });
   } catch (err) {
     console.error("Server error:", err);
     res.status(500).json({ error: "Server error", details: err.message });
@@ -78,8 +69,8 @@ app.post("/api/summarize", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log("Backend successful oh my god vazhthukal vazthukal");
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log("Backend server running ✅");
+  console.log(`Server at http://localhost:${PORT}`);
 });

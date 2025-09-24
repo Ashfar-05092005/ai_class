@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./QuickNote.css";
-import GAL from "./images/250542.jpg";
+import "./QuickNote.css"; // optional styling
+import GAL from "./images/250542.jpg"; // background image
 import { Card } from "react-bootstrap";
 
 function QuickNote() {
@@ -33,19 +33,11 @@ function QuickNote() {
         body: JSON.stringify({ text, tone }),
       });
 
-      // Read raw response text first
       const rawText = await response.text();
-
-      let data;
-      try {
-        data = rawText ? JSON.parse(rawText) : {};
-      } catch (err) {
-        console.error("Failed to parse JSON:", rawText);
-        throw new Error("Invalid response from server");
-      }
+      const data = rawText ? JSON.parse(rawText) : {};
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong on the server");
+        throw new Error(data.error || "Server error");
       }
 
       setSummary(data.summary || "No summary generated.");
@@ -54,6 +46,10 @@ function QuickNote() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopy = () => {
+    if (summary) navigator.clipboard.writeText(summary);
   };
 
   return (
@@ -71,36 +67,32 @@ function QuickNote() {
       >
         <div
           className="card shadow-lg p-4 text-light"
-          style={{ width: "800px", backgroundColor: "rgba(23, 13, 88, 0.8)" }}
+          style={{ width: "800px", backgroundColor: "rgba(23, 13, 88, 0.85)" }}
         >
           <div className="text-center mb-4">
             <h3 className="fw-bold">Quick Note</h3>
           </div>
 
-          <div className="mb-3">
-            <textarea
-              className="form-control text-dark bg-light custom-textarea"
-              rows="6"
-              placeholder="Type your text here..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </div>
+          <textarea
+            className="form-control text-dark bg-light mb-3"
+            rows="6"
+            placeholder="Type your text here..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
 
-          <div className="mb-3">
-            <select
-              className="form-select bg-light text-dark border"
-              value={tone}
-              onChange={(e) => setTone(e.target.value)}
-            >
-              <option value="Professional">Professional</option>
-              <option value="Casual">Casual</option>
-              <option value="Enthusiastic">Enthusiastic</option>
-              <option value="Formal">Formal</option>
-            </select>
-          </div>
+          <select
+            className="form-select bg-light text-dark mb-3"
+            value={tone}
+            onChange={(e) => setTone(e.target.value)}
+          >
+            <option value="Professional">Professional</option>
+            <option value="Casual">Casual</option>
+            <option value="Enthusiastic">Enthusiastic</option>
+            <option value="Formal">Formal</option>
+          </select>
 
-          <div className="d-grid">
+          <div className="d-grid mb-3">
             <button
               className="btn btn-info fw-semibold"
               onClick={handleSummarize}
@@ -111,18 +103,20 @@ function QuickNote() {
           </div>
 
           {summary && (
-            <div className="mt-4 p-3 rounded bg-light text-dark">
-              <h5 className="fw-bold text-dark">Summary:</h5>
+            <div className="mt-4 p-3 rounded bg-light text-dark" style={{ maxHeight: "300px", overflowY: "auto" }}>
+              <h5 className="fw-bold">Summary:</h5>
               <ul className="mb-0">
-                {summary.split("\n").map((line, index) => {
-                  const trimmed = line.trim();
-                  if (!trimmed) return null;
-
-                  // Remove any leading bullet markers like *, -, or •
-                  const content = trimmed.replace(/^[-•*]\s*/, "");
-                  return <li key={index}>{content}</li>;
-                })}
+                {summary
+                  .split(/\n|•|-/)
+                  .map((line) => line.trim())
+                  .filter((line) => line)
+                  .map((line, index) => (
+                    <li key={index}>{line}</li>
+                  ))}
               </ul>
+              <button className="btn btn-sm btn-secondary mt-2" onClick={handleCopy}>
+                Copy to Clipboard
+              </button>
             </div>
           )}
 

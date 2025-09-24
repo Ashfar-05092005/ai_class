@@ -12,7 +12,7 @@ app.use(express.static("public"));
 
 // Root route
 app.get("/", (req, res) => {
-  res.send("Backend successful ✅");
+  res.send("Backend successful vazthukal vazthukal");
 });
 
 // API: Summarization

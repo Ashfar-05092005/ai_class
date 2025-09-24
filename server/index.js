@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const fetch = require("node-fetch"); // if using Node <18
 
 const app = express();
 
@@ -43,8 +44,17 @@ app.post("/api/summarize", async (req, res) => {
       }),
     });
 
-    // Get raw response text first
+    // Get raw text
     const rawText = await geminiResponse.text();
+
+    // Check if response is OK before parsing JSON
+    if (!geminiResponse.ok) {
+      console.error("Gemini API error:", geminiResponse.status, rawText);
+      return res.status(500).json({
+        error: "Gemini API request failed",
+        details: rawText,
+      });
+    }
 
     let data;
     try {
@@ -52,31 +62,23 @@ app.post("/api/summarize", async (req, res) => {
     } catch (err) {
       console.error("❌ Failed to parse JSON:", rawText);
       return res.status(500).json({
-        error: "Invalid response from Gemini API",
+        error: "Invalid JSON from Gemini API",
         details: rawText,
       });
     }
 
-    if (!geminiResponse.ok) {
-      console.error("API Error:", geminiResponse.status, data);
-      return res
-        .status(500)
-        .json({ error: data.error?.message || "Gemini API failed" });
-    }
-
     const summary =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No summary generated.";
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No summary generated.";
 
     res.json({ summary: summary.trim() });
-  } catch (e) {
-    console.error("Server error:", e);
-    res.status(500).json({ error: e.message });
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
 // Start server
-const PORT = process.env.port || 4000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log("Backend successful ✅");
   console.log(`Server running at http://localhost:${PORT}`);

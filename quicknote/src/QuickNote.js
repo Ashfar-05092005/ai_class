@@ -11,10 +11,10 @@ function QuickNote() {
   const [summary, setSummary] = useState("");
   const [error, setError] = useState("");
 
-const API_BASE =
-  process.env.NODE_ENV === "development"
-    ? process.env.REACT_APP_API_BASE
-    : window.location.origin;
+  const API_BASE =
+    process.env.NODE_ENV === "development"
+      ? process.env.REACT_APP_API_BASE
+      : window.location.origin;
 
   const handleSummarize = async () => {
     if (!text.trim()) {
@@ -33,10 +33,22 @@ const API_BASE =
         body: JSON.stringify({ text, tone }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Something went wrong");
+      // Read raw response text first
+      const rawText = await response.text();
 
-      setSummary(data.summary);
+      let data;
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch (err) {
+        console.error("Failed to parse JSON:", rawText);
+        throw new Error("Invalid response from server");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong on the server");
+      }
+
+      setSummary(data.summary || "No summary generated.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -118,9 +130,15 @@ const API_BASE =
         </div>
       </div>
 
-      <Card.Footer className="text-light" style={{ textAlign: "center", background: "#424040" }}>
+      <Card.Footer
+        className="text-light"
+        style={{ textAlign: "center", background: "#424040" }}
+      >
         © Developed by{" "}
-        <a href="https://www.linkedin.com/in/mohammed-ashfar-meeran-b4a492311" style={{ textDecoration: "none" }}>
+        <a
+          href="https://www.linkedin.com/in/mohammed-ashfar-meeran-b4a492311"
+          style={{ textDecoration: "none" }}
+        >
           Mohammed ASHFAR.M
         </a>
       </Card.Footer>

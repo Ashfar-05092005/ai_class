@@ -1,20 +1,16 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // for Node <18
+const fetch = require("node-fetch"); // Node <18
+const path = require("path");
 
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "*" })); // allow frontend requests
+app.use(cors()); // allow requests from frontend
 app.use(express.json());
 
-// Root route
-app.get("/", (req, res) => {
-  res.send("Backend running ✅");
-});
-
-// Summarize API
+// API: Summarize
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey) return res.status(500).json({ error: "API key missing" });
@@ -37,7 +33,9 @@ app.post("/api/summarize", async (req, res) => {
     if (!response.ok) return res.status(500).json({ error: rawText });
 
     const data = JSON.parse(rawText);
-    const summary = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join(" ").trim() || "No summary generated";
+    const summary =
+      data?.candidates?.[0]?.content?.parts?.map(p => p.text).join(" ").trim() ||
+      "No summary generated";
 
     res.json({ summary });
   } catch (err) {
@@ -45,6 +43,15 @@ app.post("/api/summarize", async (req, res) => {
   }
 });
 
+// Serve React frontend (production)
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client/build")));
+  app.get("*", (req, res) =>
+    res.sendFile(path.join(__dirname, "client/build", "index.html"))
+  );
+}
+
 // Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));
+//jfjf

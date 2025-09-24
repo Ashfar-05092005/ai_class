@@ -31,7 +31,7 @@ app.post("/api/summarize", async (req, res) => {
   }
 
   const safeTone = tone.toLowerCase();
-  const prompt = `Summarize the following message in exactly 12 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
+  const prompt = `Summarize the following message in exactly 10 bullet points using a ${safeTone} tone:\n\n"""${text}"""`;
 
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
@@ -78,7 +78,7 @@ app.post("/api/summarize", async (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log("Backend successful oh my god vazhthukal vazthukal");
   console.log(`Server running at http://localhost:${PORT}`);

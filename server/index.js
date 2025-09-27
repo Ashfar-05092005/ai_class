@@ -9,7 +9,7 @@ const path = require("path");
 // Middleware
 app.use(cors()); // allow requests from frontend
 app.use(express.json());
-
+PORT = 4000;
 // API: Summarize
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;

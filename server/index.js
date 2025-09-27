@@ -1,16 +1,16 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Node <18
+const fetch = require("node-fetch");
 const path = require("path");
 
-const app = express(); // define app
+const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// API: Summarize
+// API route
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey) return res.status(500).json({ error: "API key missing" });
@@ -19,7 +19,6 @@ app.post("/api/summarize", async (req, res) => {
   if (!text || !tone) return res.status(400).json({ error: "Text and tone required" });
 
   const prompt = `Summarize the following text in exactly 12 bullet points using a ${tone.toLowerCase()} tone:\n\n"""${text}"""`;
-
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
   try {
@@ -45,14 +44,15 @@ app.post("/api/summarize", async (req, res) => {
 
 // Serve React frontend (production)
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
+  app.use(express.static(path.join(__dirname, "../client/build")));
 
-  // ✅ Correct wildcard route
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  // Fixed wildcard route
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
 
 // Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+

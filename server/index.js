@@ -1,10 +1,10 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Node <18
+// ❌ Node 22 has fetch built-in, so no need for node-fetch
 const path = require("path");
 
-const app = express(); // ✅ define app here
+const app = express();
 
 // Middleware
 app.use(cors()); // allow requests from frontend
@@ -13,10 +13,14 @@ app.use(express.json());
 // API: Summarize
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) return res.status(500).json({ error: "API key missing" });
+  if (!geminiApiKey) {
+    return res.status(500).json({ error: "API key missing" });
+  }
 
   const { text, tone } = req.body;
-  if (!text || !tone) return res.status(400).json({ error: "Text and tone required" });
+  if (!text || !tone) {
+    return res.status(400).json({ error: "Text and tone required" });
+  }
 
   const prompt = `Summarize the following text in exactly 12 bullet points using a ${tone.toLowerCase()} tone:\n\n"""${text}"""`;
 
@@ -30,11 +34,13 @@ app.post("/api/summarize", async (req, res) => {
     });
 
     const rawText = await response.text();
-    if (!response.ok) return res.status(500).json({ error: rawText });
+    if (!response.ok) {
+      return res.status(500).json({ error: rawText });
+    }
 
     const data = JSON.parse(rawText);
     const summary =
-      data?.candidates?.[0]?.content?.parts?.map(p => p.text).join(" ").trim() ||
+      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join(" ").trim() ||
       "No summary generated";
 
     res.json({ summary });
@@ -46,9 +52,9 @@ app.post("/api/summarize", async (req, res) => {
 // Serve React frontend (production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client/build")));
-  app.get("*", (req, res) =>
-    res.sendFile(path.join(__dirname, "client/build", "index.html"))
-  );
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  });
 }
 
 // Start server

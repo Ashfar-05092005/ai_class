@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const fetch = require("node-fetch");
 const path = require("path");
-const fetch = require("node-fetch"); // Node <18
 
 const app = express();
 
@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// API route
+// API: Summarize
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey) return res.status(500).json({ error: "API key missing" });
@@ -44,10 +44,11 @@ app.post("/api/summarize", async (req, res) => {
 
 // Serve React frontend (production)
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
-  // catch-all handler for any route not handled by API
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  app.use(express.static(path.join(__dirname, "../client/build")));
+
+  // ✅ Fixed wildcard route
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
 }
 

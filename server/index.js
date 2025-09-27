@@ -4,12 +4,12 @@ const cors = require("cors");
 const fetch = require("node-fetch"); // Node <18
 const path = require("path");
 
-
+const app = express(); // ✅ define app here
 
 // Middleware
 app.use(cors()); // allow requests from frontend
 app.use(express.json());
-PORT = 4000;
+
 // API: Summarize
 app.post("/api/summarize", async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -53,5 +53,4 @@ if (process.env.NODE_ENV === "production") {
 
 // Start server
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));
-//jfjf
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));

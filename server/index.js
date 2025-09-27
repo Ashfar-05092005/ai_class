@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fetch = require("node-fetch"); // if using Node <18
 
 const app = express();
 
@@ -44,8 +45,8 @@ app.post("/api/summarize", async (req, res) => {
 // Serve React frontend (production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client/build")));
-  app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
   });
 }
 

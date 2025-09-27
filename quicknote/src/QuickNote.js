@@ -11,6 +11,7 @@ function QuickNote() {
   const [summary, setSummary] = useState("");
   const [error, setError] = useState("");
 
+  // Use environment variable for API base
   const API_BASE = process.env.REACT_APP_API_BASE || window.location.origin;
 
   const handleSummarize = async () => {
@@ -30,7 +31,7 @@ function QuickNote() {
         body: JSON.stringify({ text, tone }),
       });
 
-      const data = await response.json(); // Directly parse JSON
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Server error");
@@ -143,4 +144,3 @@ function QuickNote() {
 }
 
 export default QuickNote;
-//jfdfbzhnjd

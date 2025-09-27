@@ -1,8 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch");
 const path = require("path");
+const fetch = require("node-fetch"); // Node <18
 
 const app = express();
 
@@ -44,15 +44,13 @@ app.post("/api/summarize", async (req, res) => {
 
 // Serve React frontend (production)
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../client/build")));
-
-  // Fixed wildcard route
+  app.use(express.static(path.join(__dirname, "client/build")));
+  // catch-all handler for any route not handled by API
   app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+    res.sendFile(path.join(__dirname, "client/build", "index.html"));
   });
 }
 
 // Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
-
